@@ -13,7 +13,7 @@
             </div>
           </div>
           <div class="card-body bg-white p-4">
-            if(auth()->user()->isAdmin() || auth()->id()==$article->user_id)
+            @if(auth()->user()->isAdmin() || auth()->id()==$article->user_id)
             <div class="d-flex mb-3 gap-2">
               <a href="{{route('articles.edit',$article->id)}}" class="btn btn-warning rounded-pill px-4 fw-semibold"><i class="bi bi-pencil me-1"></i> Edit</a>
               <form action="{{route('articles.destroy',$article->id)}}" method="post"> 
@@ -26,6 +26,13 @@
             <div class="text-justify mb-4 fs-5 lh-lg">
               {!!$article->content !!}
             </div>
+            @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show rounded-3 shadow-sm mb-3" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <strong>Attenzione:</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
             <h5 class="mb-3 fw-bold"><i class="bi bi-chat-dots me-2"></i>Comments</h5>
             <form action="{{route('comments.store',$article->id)}}" method="post" class="mb-4">
               @csrf
