@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Facades\Image as Image;
+use App\Models\File;
 
 
 class UserController extends Controller
@@ -104,4 +105,69 @@ class UserController extends Controller
     public function download(Request $request) {
         return response()->download(storage_path('app/private/'.$request->get('filename')));
     }
+
+    public function upload(Request $request)
+    {
+        if(!$user=Auth::user()){
+            return back()->with('message','Please Log In');
+        }
+
+        if(!$request->hasFile('file')){
+            return back()->withErrors('message','Forbidden Operation');
+        }
+
+        // $path = storage_path('app/public/docs/users/'.$user->id);
+
+        // if(!file_exists($path)){
+        //     mkdir($path, 0777, true);
+        // }
+
+        // $file=$request->file('file');
+
+        $allowedExtension=['jpg', 'jpeg', 'png', 'gif', 'pdf'];
+        $allowedMimeType=['image/jpg', 'image/jpeg', 'image/png', 'image/gif', 'application/pdf'];
+        $file=$request->file('file');
+        $extension=strtolower($file->getClientOriginalExtension());
+        $mimeType=$file->getMimeType();
+
+        if(!in_array($extension, $allowedExtension) || !in_array($mimeType, $allowedMimeType)){
+            return back()->withErrors('File type not allowed');
+        }
+
+        $filename=$file->getClientOriginalName();
+        $fileuid=uniqid().'.'.$extension;
+
+        $path=$file->storeAs("docs/users/{$user->id}", $fileuid, 'local');
+
+        File::create([
+            'name'=>$filename,
+            'uid'=>$fileuid,
+            'user_id'=>$user->id
+        ]);
+
+        return back()->withMessage("Upload successful");
+    }
+
+    public function downloadPrivateFile($file)
+    {
+        if(!$user=Auth::user()){
+            return back()->with('message','Please Log In');
+        }
+
+        $fileRecord=File::where('uid', $file)->where('user_id', $user->id)->firstOrFail();
+
+        if(!$fileRecord){
+            return back()->withErrors('File not found');
+        }
+
+        $path="docs/users/{$user->id}/{$fileRecord->uid}";
+
+        if(!Storage::disk('local')->exists($path)){
+            return back()->withErrors('File not found');
+        }
+
+        return Storage::disk('local')->download($path, $fileRecord->uid);
+
+    }
+
 }

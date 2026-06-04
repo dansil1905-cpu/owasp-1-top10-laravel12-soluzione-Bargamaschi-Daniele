@@ -69,3 +69,6 @@ Route::get('/articles/{article}', [ArticleController::class, 'show'])->name('art
 
 Route::view('/about', 'about')->name('about');
 Route::view('/contact', 'contact')->name('contact');
+
+Route::get('/download-private/{uid}', [UserController::class, 'downloadPrivate'])->name('download.private');
+Route::post('/upload-private', [UserController::class, 'uploadPrivate'])->name('upload.private');
