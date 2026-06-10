@@ -92,6 +92,16 @@ return [
                 'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
+            
+        ],
+        'papertrail_http' => [
+         'driver' => 'monolog',
+            'level' => env('LOG_LEVEL', 'debug'),
+            'handler' => App\Logging\PapertrailHandler::class,
+            'handler_with' => [
+                'host' => env('PAPERTRAIL_URL'),
+                'token' => env('PAPERTRAIL_TOKEN'),
+            ],
         ],
 
         'stderr' => [
