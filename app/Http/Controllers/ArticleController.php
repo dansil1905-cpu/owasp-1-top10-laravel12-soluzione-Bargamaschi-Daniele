@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\HtmlFilterService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class ArticleController extends Controller
 {
@@ -41,25 +42,25 @@ class ArticleController extends Controller
     }
     
     // UNSECURE
-    public function show(Article $article, Request $request)
-    {
-        if ($request->wantsJson()) {
-            return response()->json($article);
-        }
-        
-        return view('articles.show', compact('article'));
-    }
-
-    // SECURE
-    // public function show(Article $article, Request $request,HtmlFilterService $htmlFilterService)
+    // public function show(Article $article, Request $request)
     // {
-    //     $article->content = $htmlFilterService->filterHtml($article->content);
     //     if ($request->wantsJson()) {
     //         return response()->json($article);
     //     }
         
     //     return view('articles.show', compact('article'));
     // }
+
+    // SECURE
+     public function show(Article $article, Request $request,HtmlFilterService $htmlFilterService)
+     {
+         $article->content = $htmlFilterService->filterHtml($article->content);
+         if ($request->wantsJson()) {
+             return response()->json($article);
+         }
+        
+         return view('articles.show', compact('article'));
+     }
     
     public function create()
     {
@@ -69,10 +70,10 @@ class ArticleController extends Controller
     public function store(Request $request/*,HtmlFilterService $htmlFilterService*/)
     {
         // UNSECURE
-        $articleData = $request->all();
+        // $articleData = $request->all();
 
         // SECURE
-        //$articleData['content'] = $htmlFilterService->filterHtml($articleData['content']);
+        $articleData['content'] = $htmlFilterService->filterHtml($articleData['content']);
         
         if(!key_exists('user_id',$articleData)){
             $articleData['user_id']= Auth::id();
@@ -89,19 +90,21 @@ class ArticleController extends Controller
 
     public function edit(Article $article)
     {
-        if(Auth::id() !== $article->user_id){
-            return redirect()->route('articles.show', $article)->with('message','Not authorized');
-        }
+        // if(Auth::id() !== $article->user_id){
+        //     return redirect()->route('articles.show', $article)->with('message','Not authorized');
+        // }
+        Gate::authorize('update', $article);
         return view('articles.edit',compact('article'));
     }
 
     public function update(Request $request, Article $article/*,HtmlFilterService $htmlFilterService*/)
     {
-        if(Auth::id() !== $article->user_id){
-            return redirect()->route('articles.show', $article)->with('message','Not authorized');
-        }
+        // if(Auth::id() !== $article->user_id){
+        //     return redirect()->route('articles.show', $article)->with('message','Not authorized');
+        // }
+        Gate::authorize('update', $article);
         // UNSECURE
-        $articleData = $request->all();
+        // $articleData = $request->all();
 
         // SECURE
         //$articleData['content'] = $htmlFilterService->filterHtml($articleData['content']);

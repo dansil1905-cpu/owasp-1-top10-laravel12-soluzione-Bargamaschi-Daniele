@@ -38,6 +38,7 @@
 // // Restituisci i dati come risposta JSON
 // echo json_encode($data);
 
+//SI
 $allowedIp =  ['127.0.0.1','localhost','::1'];
 $clinetIp = $_SERVER['REMOTE_ADDR'] ?? '';
 $userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
